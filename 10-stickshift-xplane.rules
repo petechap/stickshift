@@ -1,0 +1,12 @@
+# This should be copied into /lib/udev/rules.d/
+KERNEL!="stickshift*", GOTO="stickshift_end"
+
+# X-plane is hard-wired to look for /dev/input/jsX, so when the stickshift cuse
+# device (which we want to use instead) appears, the original jsX device node
+# gets moved out of the way.
+ACTION=="add", MODE="0644", SYMLINK="input/js%m", PROGRAM="/bin/sh -c 'mv /dev/input/js%m /dev/input/realjs%m'"
+
+# ... and moved back when the cuse device is removed.
+ACTION=="remove", RUN="/bin/sh -c 'mv /dev/input/realjs%m /dev/input/js%m'"
+
+LABEL="stickshift_end"

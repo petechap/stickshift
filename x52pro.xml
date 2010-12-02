@@ -1,0 +1,191 @@
+<stickshift>
+    <!-- The stickshift XML file works with named 'button sets', or bsets. Each
+         is a collection of one or more buttons. On at the start of parsing this
+         file there are N bsets, named from 0..(N-1) where N is the number of
+         buttons on the 'real' joystick.
+         
+         Here I define new bsets that are more helpfully named for my Saitek
+         X52 Pro: -->
+    <bset use="0"             name="trigger"/>
+    <bset use="1"             name="fire"/>
+    <bset use="2"             name="a"/>
+    <bset use="3"             name="b"/>
+    <bset use="4"             name="c"/>
+    <bset use="5"             name="pinkie"/>
+    <bset use="6"             name="d"/>
+    <bset use="7"             name="e"/>
+    <bset begin="8" end="13"  name="basebuttons"/>
+    <bset use="8"             name="t1"/>
+    <bset use="9"             name="t2"/>
+    <bset use="10"            name="t3"/>
+    <bset use="11"            name="t4"/>
+    <bset use="12"            name="t5"/>
+    <bset use="13"            name="t6"/>
+    <bset use="14"            name="trigger2"/>
+    <bset use="15"            name="mouse"/>
+    <bset begin="16" end="18" name="throttlewheel"/>
+    <bset use="16"            name="throttlewheel_fwd"/>
+    <bset use="17"            name="throttlewheel_back"/>
+    <bset use="18"            name="throttlewheel_pressed"/>
+    <bset use="19,20,21,22"   name="thumbhat"/>
+    <bset use="19"            name="thumbhat_up"/>
+    <bset use="20"            name="thumbhat_right"/>
+    <bset use="21"            name="thumbhat_down"/>
+    <bset use="22"            name="thumbhat_left"/>
+    <bset begin="23" end="26" name="throttlehat"/>
+    <bset use="23"            name="throttlehat_up"/>
+    <bset use="24"            name="throttlehat_right"/>
+    <bset use="25"            name="throttlehat_down"/>
+    <bset use="26"            name="throttlehat_left"/>
+    <bset use="27"            name="rotary_red"/>
+    <bset use="28"            name="rotary_pink"/>
+    <bset use="29"            name="rotary_blue"/>
+    <bset use="30"            name="i"/>
+    <bset begin="31" end="38" name="mfd_all"/>
+    <bset use="31"            name="function"/>
+    <bset use="32"            name="startstop"/>
+    <bset use="33"            name="reset"/>
+    <bset use="34"            name="funcup"/>
+    <bset use="35"            name="funcdn"/>
+    <bset use="36"            name="mfdselup"/>
+    <bset use="37"            name="mfdseldn"/>
+    <bset use="38"            name="mfdsel"/>
+    
+    <!-- Create a set of 4 buttons by mapping axes 7 and 8 (the conical 'hat'
+         in the centre of the stick) into button presses.
+    
+         The 'neg_name' and 'pos_name' attributes are optional and are there in
+         case you want to refer to the new buttons individually.
+         
+         The axes that are remapped in this way will not be visible on the
+         'virtual' joystick.
+         
+         The axisbuttons element is presented here inside a bset in order to
+         group all buttons together under the name 'conehat', however
+         axisbuttons is valid outside of a bset element too.
+         -->
+    <bset name="conehat">
+        <axisbuttons axis="7" neg_name="conehat_left" pos_name="conehat_right"/>
+        <axisbuttons axis="8" neg_name="conehat_up"   pos_name="conehat_down"/>
+    </bset>
+
+    <!-- Group all buttons on the stick together under the name "stick". (This
+         group is not subsequently used and is just for illustration) -->
+    <bset name="stick">
+        <bset use="thumbhat"/>
+        <bset use="conehat"/> <!-- NB this is the remapped axis hat -->
+        <bset use="fire"/>
+        <bset use="pinkie"/>
+        <bset use="trigger"/>
+        <bset use="trigger2"/>
+        <bset use="a"/>
+        <bset use="b"/>
+        <bset use="c"/>
+    </bset>
+
+    <!-- The two MFD wheels each have 3 distinct buttons: "up", "down" and
+         "pressed".  I find it more useful to have 4 buttons, representing
+         "up", "down, "coarse_up" and "coarse_down" as this feels more natural
+         with X-Plane's system of tuning radios. -->
+         
+    <!-- The 4 outputs will be collectively called mfd_leftwheel -->
+    <shift name="mfd_rightwheel"> 
+        <!-- These are the two 'buttons' to be duplicated --> 
+        <bset use="funcup,funcdn"/> 
+        <!-- We are asking for 2 states, function==0 (unpressed) and
+             function==1 (pressed).  funcup & funcdn map to different 'virtual'
+             buttons in each state.
+             -->
+        <condition button="function" state="0,1"/>
+    </shift>
+    
+    <!-- This is the same, but for the left wheel -->
+    <shift name="mfd_leftwheel">
+        <bset use="mfdseldn,mfdselup"/>
+        <condition button="mfdsel" state="0,1"/>
+    </shift>
+    
+    <!-- Define 'mfd' to be the two doubled-up wheels which we just defined,
+         plus the startstop and reset buttons which are also part of the X52's MFD.
+         This buttonset has 10 buttons: 4 for each 'wheel' plus 'startstop' and
+         'reset'.
+         -->
+    <bset name="mfd" use="mfd_leftwheel,mfd_rightwheel,startstop,reset"/>
+    
+    <!-- Define different button sets according to the main 3-way rotary selector.
+         The rotary selector appears as 3 buttons, one of which is pressed at
+         any given time. We want to define 3 conditions, each being selected by
+         the corresponding button being pressed (state="1").
+         The release of the rotary 'button' (state="0") is not important. -->
+    <shift>
+        <!-- This shift element will be duplicating the mfd and basebuttons
+             T1-T6 -->
+        <bset use="mfd,basebuttons"/>
+        
+        <!-- Here I define a set of shifts that only apply when the rotary
+             selector is at the red position. For me this is navigation mode:
+             I use the 6 buttons at the base of the stick to flip between MFD
+             functions. e.g. after pressing T1 I can use the left wheel to set
+             nav1_active, the right wheel to set nav1_standby and I bind the
+             two buttons in between them to rotate obs1.
+             Pressing T2, I get those same functions for nav2 / obs2, and
+             so on. -->
+        <condition button="rotary_red" state="1">
+            <shift>
+                <bset use="mfd"/>
+                <!-- mfd has 10 buttons (see above) so the output of this shift
+                     is 60 extra buttons. T1-T6 are used as condition buttons
+                     so they aren't directly visible as button presses when the
+                     rotary is red. -->
+                <condition button="t1"/> <!-- MFD controls nav1      -->
+                <condition button="t2"/> <!-- MFD controls nav2      -->
+                <condition button="t3"/> <!-- MFD controls adf1      -->
+                <condition button="t4"/> <!-- MFD controls adf2      -->
+                <condition button="t5"/> <!-- MFD controls GPS       -->
+                <condition button="t6"/> <!-- MFD controls autopilot -->
+            </shift>
+        </condition>
+        
+        <!-- rotary_pink & rotary_blue each have distinct buttons for the
+             basebuttons (T1-T6) and the MFD. So each of these conditions
+             creates an extra 16 buttons on the output joystick (10 in 'mfd'
+             plus 6 in T1-T6) -->
+        <condition button="rotary_pink"/>  <!-- state="1" is the default -->
+        <condition button="rotary_blue"/>
+    </shift>
+ 
+    <!-- Identical conditions are cycled between when activated. The following
+         shift creates 3 apparent throttle hats (the hat at the back of the X52
+         throttle) that are cycled between by pressing the 'e' button: -->
+    <shift>
+        <bset use="throttlehat"/>
+        <condition button="e" state="1,1,1"/>
+    </shift>
+    
+    <!-- if you omit the bset element inside a <shift>, all remaining buttons
+         (ie those that have not yet been used in a shift bset or condition
+         button) are used: -->
+    <shift>
+        <condition button="i" state="0,1"/>
+    </shift>
+    
+    <calibrate>
+        <!-- My mouselook axes have a terrible dead centre. The raw values are
+             from 0-15 on each axis and my x-axis returns to anywhere between 6
+             and 8.
+             These axis numbers relate to the 'real' joystick: they may differ
+             from the virtual joystick if you've changed some hat axes to
+             buttons.
+             
+             These values can be obtained by running with the "calibrated"
+             option and using a program such as jscal or jstest-gtk to
+             calibrate the virtual joystick. You can grab the 'calibrate'
+             element from the resulting XML file and paste all or some of it
+             into your input file.
+         -->
+        <broken_line axis="9" centre_min="6" centre_max="8"
+                     slope_neg="89475754" slope_pos="76693504"/>
+        <broken_line axis="10" centre_min="7" centre_max="8"
+                     slope_neg="76693504" slope_pos="76693504"/>
+    </calibrate>
+</stickshift>
