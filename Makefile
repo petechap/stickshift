@@ -1,6 +1,7 @@
 CXX=g++
-CPPFLAGS=-O0 -g -I/usr/include/libxml2 -I/usr/include/fuse -D_FILE_OFFSET_BITS=64 
-LDFLAGS=-O0 -g -lfuse -lxml2 -lpthread
+PACKAGES=fuse libxml-2.0
+CPPFLAGS=-O0 -g $(shell pkg-config --cflags $(PACKAGES))
+LDFLAGS=-O0 -g $(shell pkg-config --libs $(PACKAGES))
 SOURCES=stickshift.cpp waitpipe.cpp joymodel.cpp
 OBJECTS=$(SOURCES:.cpp=.o)
 EXECUTABLE=stickshift
